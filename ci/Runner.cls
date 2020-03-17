@@ -1,3 +1,5 @@
+Include ci
+
 Class CI.Runner
 {
 
@@ -34,11 +36,20 @@ ClassMethod ResolveStagingWorkspace(name) As %Status [ Private ]
 
 ClassMethod ExportToXML(name As %String) As %Status
 {
+  set path = "/opt/ci/app/"_name_".xml"
+
   write "Runner: Exporting project to XML ..."
   set project = ##class(%Studio.Project).%OpenId(name)
-  $$$QuitOnError(project.Export("/opt/ci/app/"_name_".xml", "/nodisplay"))
+  $$$QuitOnError(project.Export(path, "/nodisplay"))
   write " done."
+
+  do ..DisplayXMLGenerationNotice(name)
   return $$$OK
+}
+
+ClassMethod DisplayXMLGenerationNotice(name As %String) [ Private ]
+{
+  write !!, $$$BOLDDEFAULT("A XMl file has been generated with the name "_name_".xml.")
 }
 
 ClassMethod PopulateWorkspace(workspace As %String) As %Status [ Private ]

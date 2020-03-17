@@ -83,7 +83,7 @@ ClassMethod DownloadExternalDependency(url As %String) As %Boolean
     set http = ##class(%Net.HttpRequest).%New()
     set http.Server = components("host")
     set http.Https = (components("scheme") = "https")
-    set http.SSLConfiguration = $select(http.Https : "XPort SSL Configuration", 1: "")
+    set http.SSLConfiguration = $select(http.Https : "SSL Configuration for IRIS-CI", 1: "")
     $$$ThrowOnError(http.Get(components("path")))
 
     set temp = ##class(%File).TempFilename("xml")
@@ -102,7 +102,7 @@ ClassMethod CreateSSLConfig()
    new $namespace
    set $namespace = "%SYS"
 
-   do ##class(Security.SSLConfigs).Get("XPort SSL Configuration", .p)
+   do ##class(Security.SSLConfigs).Get("SSL Configuration for IRIS-CI", .p)
    if $data(p) quit
 
    set p("CipherList")="ALL:!aNULL:!eNULL:!EXP:!SSLv2"
@@ -122,7 +122,7 @@ ClassMethod CreateSSLConfig()
    set p("VerifyDepth")=9
    set p("VerifyPeer")=0
 
-   do ##class(Security.SSLConfigs).Create("XPort SSL Configuration", .p)
+   do ##class(Security.SSLConfigs).Create("SSL Configuration for IRIS-CI", .p)
 }
 
 ClassMethod setup(

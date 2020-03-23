@@ -13,8 +13,8 @@ XData setup
     <Configuration>
       <Database Name="${namespace}" Dir="/opt/ci/data" Create="yes" Resource="%DB_${namespace}" />
     </Configuration>
-    <IfDef Var="cspapp">
-    <Log Level="2" Text="CreateCSPApplication: Creating CSP application for ${cspapp}" />
+    <IfDef Var="cspapp_name">
+    <Log Level="2" Text="CreateCSPApplication: Creating CSP application for ${cspapp_name}" />
       <Invoke Class="App.Installer" Method="CreateCSPApplication" CheckStatus="1">
         <Arg Value="${cspapp_name}" />
         <Arg Value="${cspapp_authenabled}" />
@@ -27,7 +27,7 @@ XData setup
         <Arg Value="${namespace}" />
       </Invoke>
     </IfDef>
-    <IfDef Var="restapp">
+    <IfDef Var="restapp_name">
       <IfDef Var="restapp_dispatchclass">
         <Log Level="2" Text="CreateCSPApplication: Creating REST API for ${restapp}" />
         <Invoke Class="App.Installer" Method="CreateCSPApplication" CheckStatus="1">

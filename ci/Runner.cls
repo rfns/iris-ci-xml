@@ -67,7 +67,7 @@ ClassMethod PopulateWorkspace(workspace As %String) As %Status [ Private ]
 ClassMethod ImportWorkspace(workspace As %String, logLevel As %Integer = 2) As %Status [ Private ]
 {
   write "Runner: Starting Port", !!
-  $$$QuitOnError(##class(Port.Project.Manager).Import(workspace, logLevel))
+  $$$QuitOnError(##class(Port.Project.Manager).Import(workspace, logLevel, 0, 1))
   write !
   return $$$OK
 }

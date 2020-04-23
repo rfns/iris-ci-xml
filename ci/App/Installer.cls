@@ -8,7 +8,7 @@ XData setup
   <Namespace Name="${namespace}" Code="${namespace}" Data="${namespace}" Create="yes" Ensemble="no">
     <Log Level="2" Text="Downloading and installing the dependency: Port" />
     <Invoke Class="App.Installer" Method="DownloadExternalDependency" CheckStatus="1">
-      <Arg Value="https://github.com/rfns/port/raw/master/port-prod.xml" />
+      <Arg Value="https://raw.githubusercontent.com/rfns/port/master/port-prod.xml" />
     </Invoke>
     <Configuration>
       <Database Name="${namespace}" Dir="/opt/ci/data" Create="yes" Resource="%DB_${namespace}" />
@@ -71,6 +71,9 @@ ClassMethod CreateCSPApplication(cspapp As %String, authEnabled As %String = 32,
   set params("iKnowEnabled") = 1
   set params("UseCookies") = 2
 
+  if directory '= "" {
+    do ##class(%File).CreateDirectoryChain(directory)
+  }
   return ##class(Security.Applications).Create(cspapp, .params)
 }
 
@@ -82,11 +85,11 @@ ClassMethod DownloadExternalDependency(url As %String) As %Boolean
 
     set http = ##class(%Net.HttpRequest).%New()
     set http.Server = components("host")
-    set http.Https = (components("scheme") = "https")
-    set http.SSLConfiguration = $select(http.Https : "SSL Configuration for IRIS-CI", 1: "")
+    set http.Https = $select(components("scheme") = "https" : 1, 1: 0)
+    set http.Port = $get(components("port"), $case(http.Https, 1: 443, : 80))
+    set http.SSLConfiguration = $select(http.Https = 1 : "SSL Configuration for IRIS-CI", 1: "")
     $$$ThrowOnError(http.Get(components("path")))
 
-    set temp = ##class(%File).TempFilename("xml")
     set content = http.HttpResponse.Data
 
     $$$ThrowOnError($System.OBJ.LoadStream(content, "cku /nodisplay"))

@@ -13,11 +13,11 @@ ClassMethod Run(configuration As CI.Configuration) As %Status
   set name = ..ResolveApplicationName(configuration)
   set stagingWorkspace = ..ResolveStagingWorkspace(name)
 
-  do ..ConfigurePort(stagingWorkspace, configuration, .name, .logLevel, .xmlCharset, .xmlSpec)
+  do ..ConfigurePort(configuration, .name, .logLevel, .xmlCharset, .xmlSpec)
 
   $$$QuitOnError(..PopulateWorkspace(stagingWorkspace))
   $$$QuitOnError(..ImportWorkspace(stagingWorkspace, logLevel))
-  return ..ExportToXML(name)
+  return ..ExportToXML(stagingWorkspace)
 
   return $$$OK
 }
@@ -34,8 +34,9 @@ ClassMethod ResolveStagingWorkspace(name) As %Status [ Private ]
   return "/opt/ci/.staging/"_name
 }
 
-ClassMethod ExportToXML(name As %String) As %Status
+ClassMethod ExportToXML(stagingWorkspace As %String) As %Status
 {
+  set name = $piece(stagingWorkspace, "/", *)
   set path = "/opt/ci/app/"_name_".xml"
 
   write "Runner: Exporting project to XML ..."
@@ -49,7 +50,7 @@ ClassMethod ExportToXML(name As %String) As %Status
 
 ClassMethod DisplayXMLGenerationNotice(name As %String) [ Private ]
 {
-  write !!, $$$BOLDDEFAULT("A XMl file has been generated with the name "_name_".xml.")
+  write !!, $$$BOLDDEFAULT("A XML file has been generated with the name "_name_".xml.")
 }
 
 ClassMethod PopulateWorkspace(workspace As %String) As %Status [ Private ]
@@ -72,13 +73,12 @@ ClassMethod ImportWorkspace(workspace As %String, logLevel As %Integer = 2) As %
   return $$$OK
 }
 
-ClassMethod ConfigurePort(workspace As %String, configuration As CI.Configuration, Output name As %String = "app", Output logLevel As %Integer = 2, Output xlmCharset As %String = "UTF8", Output xmlSpec As %String = "")
+ClassMethod ConfigurePort(configuration As CI.Configuration, Output projectName As %String = "app", Output logLevel As %Integer = 2, Output xlmCharset As %String = "UTF8", Output xmlSpec As %String = "")
 {
-  set name = $piece(workspace, "/", *)
-  $$$QuitOnError(##class(Port.Configuration).SetCustomWorkspace(name, workspace))
+  do ##class(Port.Configuration).SetPrimaryWorkspace("/opt/ci/staging/{PROJECT}")
 
-  do ConfigureIOCharset("PORT_CONFIGURATION_INPUT_CHARSET")
-  do ConfigureIOCharset("PORT_CONFIGURATION_OUTPUT_CHARSET")
+  do ConfigureIOCharset("PORT_CONFIGURATION_INTERNAL_CHARSET")
+  do ConfigureIOCharset("PORT_CONFIGURATION_EXTERNAL_CHARSET")
 
   set logLevel = configuration.GetEnv("PORT_CONFIGURATION_LOGLEVEL")
   if logLevel = "" set logLevel = 2
@@ -91,8 +91,8 @@ ConfigureIOCharset(name)
       set extension = $$$ucase($piece($listget(configs, i),  ":", 1))
       set charset = $$$ucase($piece($listget(configs, i),  ":", 2))
 
-      if name [ "INPUT" do ##class(Port.Configuration).SetInputCharset(extension, charset)
-      else  do ##class(Port.Configuration).SetOutputCharset(extension, charset)
+      if name [ "EXTERNAL" { do ##class(Port.Configuration).SetExternalCharset(extension, charset) }
+      elseif name [ "INTERNAL" { do ##class(Port.Configuration).SetInternalCharset(extension, charset) }
     }
   }
   quit

@@ -17,7 +17,7 @@ ClassMethod Run(configuration As CI.Configuration) As %Status
 
   $$$QuitOnError(..PopulateWorkspace(stagingWorkspace))
   $$$QuitOnError(..ImportWorkspace(stagingWorkspace, logLevel))
-  return ..ExportToXML(stagingWorkspace)
+  return ..ExportToXML(stagingWorkspace, configuration)
 
   return $$$OK
 }
@@ -34,14 +34,19 @@ ClassMethod ResolveStagingWorkspace(name) As %Status [ Private ]
   return "/opt/ci/.staging/"_name
 }
 
-ClassMethod ExportToXML(stagingWorkspace As %String) As %Status
+ClassMethod ExportToXML(stagingWorkspace As %String, configuration As CI.Configuration) As %Status
 {
   set name = $piece(stagingWorkspace, "/", *)
   set path = "/opt/ci/app/"_name_".xml"
+  set xmlExportFlags = configuration.GetEnv("CI_XML_FLAGS")
+  
+  if xmlExportFlags [ "display" {
+    return $$$ERROR($$$GeneralError, "XML export flag 'display' cannot overwritten. Please remove it from CI_XML_FLAGS and try again.")
+  }
 
   write "Runner: Exporting project to XML ..."
   set project = ##class(%Studio.Project).%OpenId(name)
-  $$$QuitOnError(project.Export(path, "/nodisplay"))
+  $$$QuitOnError(project.Export(path, "/nodisplay"_xmlExportFlags))
   write " done."
 
   do ..DisplayXMLGenerationNotice(name)
@@ -58,7 +63,7 @@ ClassMethod PopulateWorkspace(workspace As %String) As %Status [ Private ]
   write "Runner: Creating workspace "_workspace_" and populating with sources from /opt/ci/app ..."
 
   if '##class(%File).CopyDir("/opt/ci/app", workspace) && (%objlasterror '= "") {
-    return $$$ERROR($$$GeneralError, "Failed to duplicate sources to staging workspace. Received the the following error: "_$System.Status.GetErrorText(%objlasterror))
+    return $$$ERROR($$$GeneralError, "Failed to duplicate sources to staging workspace. Received the following error: "_$System.Status.GetErrorText(%objlasterror))
   }
   write " done.", !
 

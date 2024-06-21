@@ -42,7 +42,7 @@ ClassMethod ExportToXML(stagingWorkspace As %String, configuration As CI.Configu
   set charset = configuration.GetEnv("CI_XML_CHARSET")
 
   if charset '= ""  {
-    set nls = ##class(%SYSTEM.NLS.Table).%New("Process")
+    set nls = ##class(%SYS.NLS.Table).%New("Process")
     set nls.File = charset
   }
   

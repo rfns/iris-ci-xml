@@ -13,7 +13,7 @@ ClassMethod Run(configuration As CI.Configuration) As %Status
   set name = ..ResolveApplicationName(configuration)
   set stagingWorkspace = ..ResolveStagingWorkspace(name)
 
-  do ..ConfigurePort(configuration, .name, .logLevel, .xmlCharset, .xmlSpec)
+  do ..ConfigurePort(configuration, .logLevel)
 
   $$$QuitOnError(..PopulateWorkspace(stagingWorkspace))
   $$$QuitOnError(..ImportWorkspace(stagingWorkspace, logLevel))
@@ -45,7 +45,7 @@ ClassMethod ExportToXML(stagingWorkspace As %String, configuration As CI.Configu
     return $$$ERROR($$$GeneralError, "XML export flag 'display' cannot overwritten. Please remove it from CI_XML_FLAGS and try again.")
   }
 
-  write "Runner: Exporting project to XML ..."
+  write "Runner: Exporting project to XML "_$select(charset '= "" : "(using charset "_charset_")", 1: "")_" ..."
   set project = ##class(%Studio.Project).%OpenId(name)
   $$$QuitOnError(project.Export(path, "/nodisplay"_xmlExportFlags,,, charset))
   write " done."
@@ -79,7 +79,7 @@ ClassMethod ImportWorkspace(workspace As %String, logLevel As %Integer = 2) As %
   return $$$OK
 }
 
-ClassMethod ConfigurePort(configuration As CI.Configuration, Output projectName As %String = "app", Output logLevel As %Integer = 2, Output xlmCharset As %String = "UTF8", Output xmlSpec As %String = "")
+ClassMethod ConfigurePort(configuration As CI.Configuration, Output logLevel As %Integer = 2)
 {
   do ##class(Port.Configuration).SetPrimaryWorkspace("/opt/ci/staging/{PROJECT}")
 

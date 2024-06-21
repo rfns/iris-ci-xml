@@ -39,6 +39,7 @@ ClassMethod ExportToXML(stagingWorkspace As %String, configuration As CI.Configu
   set name = $piece(stagingWorkspace, "/", *)
   set path = "/opt/ci/app/"_name_".xml"
   set xmlExportFlags = configuration.GetEnv("CI_XML_FLAGS")
+  set charset = configuration.GetEnv("CI_XML_CHARSET")
   
   if xmlExportFlags [ "display" {
     return $$$ERROR($$$GeneralError, "XML export flag 'display' cannot overwritten. Please remove it from CI_XML_FLAGS and try again.")
@@ -46,7 +47,7 @@ ClassMethod ExportToXML(stagingWorkspace As %String, configuration As CI.Configu
 
   write "Runner: Exporting project to XML ..."
   set project = ##class(%Studio.Project).%OpenId(name)
-  $$$QuitOnError(project.Export(path, "/nodisplay"_xmlExportFlags))
+  $$$QuitOnError(project.Export(path, "/nodisplay"_xmlExportFlags,,, charset))
   write " done."
 
   do ..DisplayXMLGenerationNotice(name)

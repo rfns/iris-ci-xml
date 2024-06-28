@@ -52,7 +52,7 @@ ClassMethod ExportToXML(stagingWorkspace As %String, configuration As CI.Configu
 
   write "Runner: Exporting project to XML "_$select(charset '= "" : "(using charset "_charset_")", 1: "")_" ..."
   set project = ##class(%Studio.Project).%OpenId(name)
-  $$$QuitOnError(project.Export(path, "/nodisplay"_xmlExportFlags))
+  $$$QuitOnError(project.Export(path, "/nodisplay"_xmlExportFlags,,,charset))
   write " done."
 
   do ..DisplayXMLGenerationNotice(name)
